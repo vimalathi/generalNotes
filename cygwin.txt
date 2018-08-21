@@ -1,0 +1,17 @@
+
+pip2 install mysql-connector-python-rf
+
+pip install --upgrade setuptools
+pip install --upgrade wheel
+
+brew install telnet
+sudo port install telnet
+
+pip2 install awscli
+
+pip2 install twitter
+
+pip2 install tweepy
+
+
+

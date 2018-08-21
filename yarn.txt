@@ -1,0 +1,8 @@
+yarn application --list
+
+yarn application --appStates all
+
+yarn application --kill apllicationName
+
+yarn application --help
+

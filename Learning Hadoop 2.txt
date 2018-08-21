@@ -1,0 +1,50 @@
+2. storage
+zk is the key part of implimentaion of hdfs HA
+zk is a coordination service that shared locks, component failure and supporting leader election (3,5,7(quantum))
+
+cmd>
+zookeeper-client
+--each dir locations are called znode
+--not suitable for large size data (default 1MB)
+create -s /dir/ 'filename' 	//-s optional it will create sequential node
+list /dir/
+get /dir/
+
+Automatic NameNode failover
+components runs on each namenode 
+	ZooKeeper quorum
+	ZooKeeper Failover Controller (ZKFC),
+	
+HDFS snapshots
+	another level of data protection to HDFS.
+	Snapshots in Hadoop 2 can be applied at either the full filesystem level or only on particular paths.
+create sanapshots
+$ sudo -u hdfs hdfs dfsadmin -allowSnapshot /user/cloudera/testdir	
+$ sudo -u hdfs hdfs dfs -createSnapshot /user/cloudera/testdir sn1
+$ sudo -u hdfs hdfs dfs -ls /user/cloudera/testdir/.snapshot/sn1
+$ sudo -u hdfs hdfs dfs -rm /user/cloudera/testdir/testfile.txt		//this will be moved to .trash
+$ hdfs dfs -tail testdir/.snapshot/sn1/testfile.txt
+$ sudo -u hdfs hdfs dfs -deleteSnapshot /user/cloudera/testdir sn1
+
+Hadoop filesystems
+	local
+	hdfs
+	s3(native) s3n
+	s3(block based) s3
+	
+Libhdfs
+Libhdfs is a C library that, can be used to access any Hadoop filesystem	
+
+Thrift
+it is a framework for building cross-language software through data serialization. 
+This interface makes it easy for non-Java code to access data stored in a Hadoop filesystem.
+
+compression
+reduce the amount of data to be read or written to the disk or across the network.
+
+compression codecs: 
+gzip, bzip2, LZO, snappy
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+

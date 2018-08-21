@@ -1,0 +1,90 @@
+Exercise 1 – Getting Started
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Get number of records
+    Print first 10 records
+
+Exercise 2 – Loops – Extract order_id and order_item_subtotal
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Using loops, create collection of tuples containing order_id, order_item_subtotal
+        order_id is second field and of type int
+        order_item_subtotal is 5th field and of type float
+    Get number of records
+    Print first 10 records
+
+Exercise 3 – Loops and Function – Compute order revenue for a given order_id
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Create a function which take orderItems collection and order_id as arguments
+    Using loops and if conditions
+        Extract order_item_subtotal from the collection for order_id passed
+        Compute revenue
+    Function should return order revenue for given order_id
+    Invoke the function by passing orderItems and order_id
+    Print order revenue
+
+Exercise 4 – Simple Map Reduce – Compute order revenue for a given order_id
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Create a function which take orderItems collection and order_id as arguments
+    Using filter, map and reduce
+        Extract order_item_subtotal from the collection for order_id passed
+        Compute revenue
+    Function should return order revenue for given order_id
+    Invoke the function by passing orderItems and order_id
+    Print order revenue
+
+Exercise 5 – Loops and Function – Compute order revenue for each order_id
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Create a function which take orderItems collection as argument
+    Using loops and if conditions
+        Extract order_id and order_item_subtotal from the collection
+        Compute revenue for each order_id
+    Function should return dict which contain order_id and revenue
+    Invoke the function by passing orderItems and assign to variable
+    Get number of records
+    Print first 10 records
+
+Exercise 6 – Loops and Function – Get number of users per social networking platform
+
+    Read data from /data/kgisl.csv into collection called kgislData
+    Create a function which take kgislData collection
+    Using loops
+        Get “social networking” field (10th one)
+        Extract each of the social networking platform
+        Perform count
+    Return dict which contain social networking platform and count
+    Invoke the function by passing kgislData as argument and assign it to a variable
+    Get number of records from dict
+    Print all the records from the collection
+    Try to sort the data in descending order by number of users per social networking platform
+
+Exercise 7 – Develop function to process list of tuples
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Apply map function and create tuples of order_id and order_item_subtotal with variable name orderItemsTuples
+        order_id is of type int
+        order_item_subtotal is of type float
+    Create a function which take orderItemsTuples and orderId as arguments
+    Using filter, map and reduce
+        Extract order_item_subtotal from the collection for orderId passed
+        Compute revenue (using sum or reduce)
+    Function should return tuple which contain orderId and revenue
+    Invoke the function by passing orderItemsTuples and orderId and assign to variable
+    Print the tuple
+
+Exercise 8 – map, groupby, reduce from itertools – Compute order revenue for each order_id
+
+    Read data from /data/retail_db/order_items/part-00000 into collection called orderItems
+    Create a function which take orderItems collection as argument
+    Using map reduce apis including itertools
+        Extract order_id, order_item_subtotal in the form of tuples
+        Group records for each order_id
+        Compute revenue for each order_id
+    Function should return dict which contain order_id and revenue
+    Invoke the function by passing orderItems and assign to variable
+    Get number of records
+    Print first 10 records
+    Try to sort the data in descending order by revenue generated and print first 10 records

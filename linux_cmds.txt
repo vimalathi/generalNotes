@@ -1,0 +1,24 @@
+ls --help
+ls -altr >>
+cd
+mkdir
+pwd
+touch test
+df -h 		>>disk free
+du -sh			>>disk usage
+history		>>will give you list of cmds we have typed earlier
+chmod
+chown
+acl			>>access control list
+find . -type d
+find -name "name"
+find . -mtime
+top			>>check resources
+uptime
+free -h
+ifconfig -a
+ps -ef
+grep
+|xargs
+sudo su
+

@@ -1,0 +1,331 @@
+--workshop 3--
+python>
+order_items = open("/home/vimalathi/data/retail_db/order_items/part-00000").read().splitlines()
+
+type(order_items)
+
+--to iterate and print
+for i in order_items[0:10]: print(i)
+
+output:
+1,1,957,1,299.98,299.98		//here second column is order id 5th column is prize
+2,2,1073,1,199.99,199.99	//so here we are going to calculate subtotal for the particular order no
+3,2,502,5,250.0,50.0
+4,2,403,1,129.99,129.99
+5,4,897,2,49.98,24.99
+6,4,365,5,299.95,59.99
+7,4,502,3,150.0,50.0
+8,4,1014,4,199.92,49.98
+9,5,957,1,299.98,299.98
+10,5,365,5,299.95,59.99
+
+def getOrderRevenue(order_items, orderId):
+	orderRevenue=0
+	for i in order_items:
+		orderItem = i.split(",")
+		if(int(orderItem[1]) == orderId):
+			orderRevenue += float(orderItem[4])
+	return orderRevenue
+	
+getOrderRevenue(oreder_items, 2)	
+
+
+def getOrderRevenuePerId(oreder_items):
+	orderRevenuePerId = {}						//initializing dict (key value)
+	for orderItem in order_items:
+		oi = orderItem.split(",")
+		orderId = int(oi[1])
+		orderItemSubtotal = float(oi[4])
+		if(orderRevenuePerId.has_key(orderId)):
+			v = orderRevenuePerId[orderId]
+			revenue = v + orderItemSubtotal
+			orderRevenuePerId[orderId] = revenue
+		else: orderRevenuePerId[orderId] = orderItemSubtotal
+	return orderRevenuePerId
+	
+orderRevenuePerId = getOrderRevenuePerId(order_items)
+
+orderRevenuePerId[2]
+
+--order revenue using map
+def myMap(c,f):
+	l = []					//initializing of collection / list
+	for i in c:
+		l.append(f(i))
+	return l
+	
+orderRevenues = myMap(order_items, lambda oi: float(oi.split(",")[4]))
+orderRevenues[:10]
+
+--to map with orderId
+orderRevenues = myMap(order_items, lambda oi: (int(oi.split(",")[1]), float(oi.split(",")[4])))
+orderRevenues[:10]
+
+--mapreduce api in python
+help(map)
+help(filter)
+help(reduce)
+
+--writing above first scenario with map filter and reduce function
+def getOrderRevenueMR(order_items, orderId):
+	ordersPerId = filter(lambda oi: int(oi.split(",")[1]) ==orderId, orderItems)
+	subtotals = map(lambda oi: float(oi.split(",")[4]), ordersPerIdPer)
+	orderRevenue = reduce(lambda total, value: total + value, subtotals)
+	return orderRevenue
+	
+getOrderRevenueMR(order_items, 2)
+
+--writing above second scenario with iter tools (richer api)
+def getOrderRevenueIterToolsMR(order_items, orderId):
+	import itertools as it
+	ordersPerId = it.ifilter(lambda oi: int(oi.split(",")[1]) ==orderId, orderItems)
+	subtotals = it.imap(lambda oi: float(oi.split(",")[4]), ordersPerIdPer)
+	orderRevenue = reduce(lambda total, value: total + value, subtotals)				//there is no reduce function in iter tool
+	return orderRevenue
+	
+getOrderRevenueIterToolsMR(order_items, 2)
+
+//the default mapreduce api comes with python that is not much powerful so we need some third party packages like pandas
+pip2 install pandas 		
+--------------------------------------------------------------------------------------------
+
+-------------------------workshop 4-----------------------------------------
+--using pycharm 
+
+import itertools as it
+#in python map and reduce api not having group by api so that we are using itertools
+#from operator import itemgetter
+#from itertools import groupby
+
+def getRevenuePerOrderId(itemsPerOrderId):
+    m = map(lambda a: a[1], itemsPerOrderId)
+    rev = reduce(lambda t, v: t + v, m)
+    return rev
+
+	def getOrderRevenuePerIdMR(orderItems):
+    orderItemsMap = it.imap(lambda oi: (int(oi.split(",")[1]), float(oi.split(",")[4])), orderItems)
+    #before group by sorted should be used to avoid duplicate group key values
+    orderItemsPerOrderId = it.groupby(sorted(list(orderItemsMap)), lambda k: k[0])
+    #(k, [(k,v1), (k, v2), (k, v3)]) //collection of tuples
+    revenuePerOrderId = it.map(lambda o: (o[0], getRevenuePerOrderId(o[1])), orderItemsPerOrderId)
+#    for key, value in it.groupby(sorted(orderItemsMap, key=lambda k: k[0]), lambda k: k[0]):
+#        if key:
+#           col1 = value
+#        else:
+#            col2 = value
+ #   print(orderItemsPerOrderId)
+    #orderItemsGroupBy = it.groupby(sorted(orderItems, key= lambda oi: float(oi.split(",")[5])), lambda k: float(k.split(",")[5]))
+    #itertools always returns iterable object so we have to type cast it to list for further processing
+    return revenuePerOrderId
+
+orderItems = open("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\order_items\\part-00000").\
+    read().\
+    splitlines()
+print(list(getOrderRevenuePerIdMR(orderItems))[1])
+for i in list(getOrderRevenuePerIdMR(orderItems)):
+    print (i)
+#print revenuePerOrder(orderItems)[0:10] 
+
+---end of this program----
+
+--same program with some diff
+import itertools as it
+from operator import itemgetter
+#from itertools import groupby
+
+def revenuePerOrder(orderItems):
+    orderItemsMap = it.imap(lambda oi: (int(oi.split(",")[1]), float(oi.split(",")[4])), orderItems)
+    #before group by sorted should be used to avoid duplicate group key values
+    orderItemsPerOrderId = it.groupby(sorted(orderItemsMap, key=lambda k: k[0]), lambda k: k[0])
+#    for key, value in it.groupby(sorted(orderItemsMap, key=lambda k: k[0]), lambda k: k[0]):
+#        if key:
+#           col1 = value
+#        else:
+#            col2 = value
+ #   print(orderItemsPerOrderId)
+    #orderItemsGroupBy = it.groupby(sorted(orderItems, key= lambda oi: float(oi.split(",")[5])), lambda k: float(k.split(",")[5]))
+    #itertools always returns iterable object so we have to type cast it to list for further processing
+#    for i in orderItemsPerOrderId[1]:
+#       print(type(i))
+#    return(orderItemsPerOrderId)
+    return 1
+
+orderItems = open("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\order_items\\part-00000").\
+    read().\
+    splitlines()
+revenuePerOrder(orderItems)[:10]
+#for i in revenuePerOrder(orderItems):
+#    print 1
+    #print i
+#print revenuePerOrder(orderItems)[0:10]
+
+---end of this program----
+
+--setup pandas in cygwin
+pip2 install pandas		//before that make sure you have installed make, gcc, gcc+ and fortran from cygwin packages
+
+---------------------------------------------end of workshhop 4 -----------------------------------------------
+
+---------------------------------------------- workshop 5 -----------------------------------------------------
+
+#get revenue for the order_id
+
+import pandas as pd
+
+def getOrderRevenue(orderItems, orderId):
+    orderRevenue = orderItems.loc[orderItems['order_item_order_id'] == 2]['order_item_subtotal'].sum()
+    return orderRevenue
+
+orderItems = pd.read_csv("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\order_items\\part-00000",
+            names=["order_item_id", "order_item_order_id", "order_item_products_id",
+                     "order_item_quantity", "order_item_subtotal", "order_item_product_price"])
+#print type(orderItems)
+print (getOrderRevenue(orderItems, 2))   #type(order_item# s
+
+def getOrderCountByStatus(orders):
+    orderCountByStatus = orders.groupby(by="order_status")['order_status'].count()
+    return orderCountByStatus
+
+orders = pd.read_csv("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\orders\\part-00000",
+            names=["order_id", "order_date", "order_customer_id", "order_status"])
+
+print (getOrderCountByStatus(orders))
+
+#get revenue per day
+
+def getDailyRevenue(orders, orderItems):
+    ordersFilterd = orders.loc[(orders['order_status'] == 'COMPLETE') | (orders['order_status'] == 'CLOSED')]
+    #print ordersFilted //to cross check the filtering
+    ordersJoin = orders.join(orderItems, how='inner')
+    dailyRevenue = ordersJoin.groupby(by="order_date")["order_item_subtotal"].sum()
+    return dailyRevenue
+
+orders = pd.read_csv("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\orders\\part-00000",
+            names=["order_id", "order_date", "order_customer_id", "order_status"],
+                     index_col="order_id") 
+orderItems = pd.read_csv("C:\\cygwin64\\home\\vimalathi\\data\\retail_db\\order_items\\part-00000",
+            names=["order_item_id", "order_item_order_id", "order_item_products_id",
+                     "order_item_quantity", "order_item_subtotal", "order_item_product_price"],
+                         index_col="order_item_order_id")
+
+print getDailyRevenue(orders, orderItems)
+
+-----------------------------------------------end of workshop 5--------------------------------------------
+
+
+
+
+
+-----------------------------------------------workshhop 7 --------------------------------------------------
+
+pyspark
+>>>inputpath = "/public/randomtextwriter/part-m-00000"
+sc.textFile(inputpath).flatMap(lambda line: line.split(" ")).map(lambda word: (work, 1)).reduceByKey(lambda t, v: t+v).saveAsTextFile("/user/dgadiraju/wordcount")
+
+----------------------------------------------------- Workshop 9 ----------------------------------------------------------------
+pycharm>
+
+from pyspark import SparkContext, SparkConf
+
+conf = SparkConf().setAppName("testing").setMaster("local")
+sc = SparkContext(conf=conf)
+orders = sc.textFile("C:\\datamaster\\retail_db\\orders")
+print(orders.count())
+
+itversity lab>
+pyspark --master yarn //--config spark.ui.port=12456
+
+--creating RDD by reading file from local 
+--differance between dataset and RDD
+--dataset is a linear threaded collection
+--RDD is a multi-threaded distributed collection
+ordersLocal = open("/home/murugesan/datamaster/retail_db/orders/part-00000").read().splitlines()
+print(type(ordersLocal))
+ordersLocal[0]
+
+ordersRDD = sc.parallelize(ordersLocal)
+type(ordersRDD)
+orderRDD.first()
+
+RDD - Resilient Distributed Dataset
+DAG - Directed Acyclic Graph		//this job visualization will be shown in spark history UI
+
+spark uses lazy evaluation:
+that means invoking more and more transformation API, until invoke any execution triggering API(action API) it will keep generating GAG by compiling code
+after invoking any execution triggering API(action API) then the DAG associated with RDD will executed
+
+--to get DAG for a RDD in shell
+ordersRDD.toDebugString()
+
+-----------------------------------------------------------end of workshop 9---------------------------------------------------------------------------------
+
+-----------------------------------------------------------start of workshop 11---------------------------------------------------------------------------------
+pyspark in windows env
+
+pyspark>
+help(sc)
+
+orderItems = sc.textFile("C:\\datamaster\\retail_db\\order_items")
+
+cloudera
+pyspark>
+
+orderItems = sc.textFile("/user/cloudera/retail_db/order_items/")
+orderItems.first()
+orderItems.take(10)
+type(orderItems.take(10))
+
+for i in orderItems.take(10):
+	print i
+
+orderItems.collect()		//never use collect() in large datasets
+--collect will convert the whole distributed collection (RDD) into linear collection.
+--so it will cause the out of memory issue.
+	
+orderItems.count()
+
+--get revenue per orderId
+help(orderItems.filter)
+orderItemsFilter = orderItems.filter(lambda oi: int(oi.split(',')[1])==2)
+print(orderItemsFilter.collect())	//to vallidate
+orderItemsMap = orderItemsFilter.map(lambda oi: float(oi.split(',')[4]))
+print(orderItemsMap.collect())
+orderRevenue = orderItemsMap.reduce(lambda t, v: t + v)
+print orderRevenue
+
+--get max revenue generating order per given orderID
+orderItemsFilter = orderItems.filter(lambda oi: int(oi.split(',')[1])==2)
+orderItemsWithMaxRevenue = orderItemsFilter.reduce(lambda max, val: max \
+	if float(max.split(',')[4]) > float(val.split(',')[4]) else val)
+
+--using of flatmap
+ lines = sc.textFile("/user/cloudera/wordcount.txt")
+ words = lines.flatMap(lambda line: line.split(" "))
+ for i in lines.collect(): print i 
+ tuples = words.map(lambda words: (words, 1))
+ wordCount = tuples.countByKey()
+ wordCounts = tuples.reduceByKey(lambda t, v: t + v)
+
+--revenue for each order Id
+orderItems = sc.textFile("/user/cloudera/retail_db/order_items/")
+for i in orderItems.take(10): print i
+orderIdMap = orderItems.map(lambda oi: (int(oi.split(',')[1]), float(oi.split(',')[4])))	//#.reduceByKey(lambda t, v: t + v)
+reduceById = orderIdMap.reduceByKey(lambda t, v: t + v)
+
+--get order items generating max quantity per order id
+
+-----------------------------------------------------------End of workshop 11---------------------------------------------------------------------------------
+
+-----------------------------------------------------------start of workshop 12---------------------------------------------------------------------------------
+
+--get order items generating max quantity per order id
+
+orderItems = sc.textFile("/user/cloudera/retail_db/order_items/")
+orderItemsMap = orderItems.map(lambda oi: (int(oi.split(",")[1]), oi))
+orderItemWithMaxQuantityPerOrder = orderItemsMap.reduceByKey(lambda max, ele: max if int(max.split(",")[3]) > int(ele.split(",")[3]) else ele)
+for i in orderItemsMap.take(10): print i 
+orderItemsMap = orderItems.map(lambda oi: (int(oi.split(",")[1]), float(oi.split(",")[4])))
+orderItemsGroupByKey=orderItems.groupByKey()
+for i in orderItemsGroupByKey.take(10): print i
+
+

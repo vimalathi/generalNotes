@@ -1,0 +1,37 @@
+In this video we will cover the pros-cons of 2 Popular file formats used in the Hadoop ecosystem namely Apache Parquet and Apache Avro 
+
+Agenda: 
+Where these formats are used 
+Similarities 
+Key Considerations when choosing: 
+
+-Read vs Write Characteristics 
+parquet write ones read many(faster reading)
+avro read ones write many(faster writing)
+
+-Tooling 
+for impala parquet is the best choice, and it supports mapreduce, hive, pig, spark and others
+for cloudera serialization avro is will be preferred
+
+-Schema Evolution 
+parquet only supports schema evolution in the form of append, and it won't support changes/modification in the column
+Avro will support append and changes and modifications.
+
+General guidelines 
+-Scenarios to keep data in both Parquet and Avro 
+Parquet is a column-based storage format for Hadoop. 
+Avro is a row-based storage format for Hadoop. However Avro is more than a serialization framework its also an IPC framework 
+
+
+Both highly optimized (vs plain text), both are self describing , uses compression 
+
+If your use case typically scans or retrieves all of the fields in a row in each query, Avro is usually the best choice. 
+(eg: select * from table_name)
+
+If your dataset has many columns, and your use case typically involves working with a subset of those columns rather than entire records, Parquet is optimized for that kind of work. 
+(eg: select colum1, column2 from particular_table_name)
+
+
+Finally in the video we will cover cases where you may use both file formats
+
+https://www.youtube.com/watch?v=sLuHzdMGFNA

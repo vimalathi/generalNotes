@@ -1,0 +1,84 @@
+what is the difference between --num-mappers and --split-by?
+how many mappers wil work for 4 splits?
+if we import using sqoop into hive default warehouse directory without using hive parameters, can hive identify the table?
+can we change the fields delimiters of files in the hdfs dir or hive tables directly without moving?
+
+
+sqoop is a data parallel import tool by pulling strategy method from rdbms into hdfs. its not running any jvm services inside hadoop environment.
+and also its a tool to execute traditional queries outside the Hadoop eco system in the parallel manner and processing across multiple cluster
+the distributed manner.
+
+sqoop 1 uses map only. but sqoop 2 uses mapreduce. sqoop is a client olny tool.
+
+every sqoop execution will generate a jar files we can get it by --outdir
+
+appending |wc -l in their end of file it will return no of words.
+
+we can not cat compressed files but we can count the no of records 
+
+default -m is 4
+
+it will split the job by validating the min and max (boundary query)of records inside a table by referring primary keys in a table.
+splitting means no of parallel read in the import process.
+
+using default boundary queries there are some out layers happening. 
+for example a tble having a primary key column with vaues 1 2 3 4 500 
+it will store 90% of data in first file and rest of the datas in second file because of default boundary query.
+datas should be spread across the files evenly.
+to over come this scenario we have to write our own --boundary-query.
+
+we can not use --table parameter with the combination of --query.
+
+while using --query we can not write a query without where condition.
+because the --query will be combined with boundary query. eg-select min() max() from ("--query" where condition) as t1
+even if we dont have condition also we have to write a condition.
+to avoid this we can use $condition(it will replace with default where condition(1=1))
+
+in sqoop we have to keep updating log table whenever doing import to do the incremental append/import.
+
+delta table is nothing but the new data table to be inserted in existing table in hdfs. 
+
+sqoop import does not support update but export supports update.
+
+sqoop export dosent understand the queries like sqoop import even though it is doing parallel processing by determining block sizes and
+no of splits instead of getting min and max value of records.
+
+sqoop update allows to insert duplicate records into table if the table is not having primary key.
+
+--staging feature in sqoop
+lets say for eg.  if we try to export some datas on a existing table not having primary key it will insert duplicate records
+or another eg. if we are exporting a table into rdbms if insert fails at the end of the rows due to some reasons 
+the export tools will try to re execute the same job again and again for 4 times after that it will throw an error. 
+in this scenario the table will have multiple records for the same data.
+to eliminate these pbs, we can create a staged table in sqoop and we can test our export there once we get the final output 
+we can execute in the production or live. 
+if we want to eliminate inserted duplicate records in staged table we can use --clear-staging-table parameter to clean the table.
+
+sqoop 
+
+parquet is the column null data file
+
+sqoop --job
+
+---------------------------------------------------------
+
+flume
+
+agent - source channel and sink 
+
+-------------------------------------------------------
+
+spark
+
+spark is non map-reduce processing engine / api
+
+it uses in memory resilient distributed dataset technique which is fault tolerance collection of elements to process the data.
+
+it will fetch all of the data into memory across the cluster and process in parallel manner with support of yarn
+
+there are two ways to create rdd's first one is by parallelizing existing collection in driver program.
+second one is by referring a dataset in an external storage system such as shared file system, hbase, hive, hdfs 
+or any data source providing Hadoop input file system
+
+it is working in the context of sql, hive, scala and python
+

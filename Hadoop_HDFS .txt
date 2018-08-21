@@ -1,0 +1,13 @@
+--to see the hdfs usage
+hadoop fsadmin -report
+
+hadoop fsadmin -refreshNodes
+
+hadoop job -kill jobid
+
+hdfs dfs -ls a
+
+hdfs fsck /user/path/filename.txt -files -blocks -locations
+
+--to count num of words for file in hdfs dir
+hadoop fs -cat /user/cloudera/sqoop_import/categories/part*|wc -l

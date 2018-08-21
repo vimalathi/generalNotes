@@ -1,0 +1,210 @@
+date
+
+who	//displays a list of all the people, or users, who are currently using the UNIX machine
+
+who am i	//am and i are arguments of who
+
+--complex cmds
+date; who am i 	//; should be used for each cmd
+
+--to make it executable
+chmod +x ./scriptfilename
+
+man		//manual pages
+
+ls 		//list
+ls -F		//For special files, a character such as !, @, or # is appended to the filename
+ls -a
+ls -aF
+ls -l		//-l lists the file type
+man ls
+
+cat
+cat filename
+cat filename secondfile
+cat -n filenames		//line numbers
+cat -b filenames		//to skip blank lines in the file
+
+wc		//options -l -w -m/-c
+wc filename
+wc filename secondfile 
+--it wil give no of line, no of words, no of chars and filename 
+
+cp source destination	//if destination exists it will overwrite without intimation
+cp -i source destination	//interactive mode
+cp res.01 res.02 res.03 work/	//cp multiple files to a dir
+cp -r source destination		//-r to copy dir
+
+mv source destination			//if destination exists it will overwrite without intimation
+mv -i source destination	//interactive mode
+mv -r source destination
+
+rm filenaem secondfile
+rm -i filenaem secondfile
+rmdir dir		//safe (removes dir if they are empty)
+rm -r dir		//unsafe (will remove dir and their contents also)
+rm -r -i dir	//interactive
+
+hour-4
+
+pwd
+.		//current dir
+..		//parent dir
+
+cat filename
+
+ls -d /directory/ 		//-d If you don't want the contents of the directory listed
+
+mkdir dirname multidirname
+mkdir -p /pdir/dir/ 		//-p will create parent dir for current dir
+
+---------------------------------------------------------------------------------------------------------------
+hour 5
+
+For special files, the first character will be one of the letters given in Table
+ls -l dir
+Character 	File Type
+- 			Regular file
+l 			Symbolic link
+c 			Character special
+b 			Block special
+p 			Named pipe
+s 			Socket
+d 			Directory file
+
+file filename 		//to know the file type
+
+ln -s source destination	//-s to create symbolic/soft link
+
+device files are located under the /dev directory. The two main types of device files are
+l Character special files
+2 Block special files		// /dev/sda/  - cd drives, hdd volumes.
+
+named pipes
+who | grep ranga		//it wil give the output of who to the grep as input
+
+sockets
+sockets can pass data and information between two processes that are not running on the same machine.
+
+Every file in UNIX has the following attributes:
+l Owner permissions
+2 Group permissions
+3 Other (world) permissions
+
+actions:
+1 Read
+2 Write
+3 Execute
+
+-rwxr-xr-x vimal users
+the first character is a hyphen (-)that is a regular file. after The (-), the first three characters indicate the permissions for the owner of the file, the next three
+characters indicate the permissions for the group the file is associated with, and the last three characters indicate the permissions for all other users.
+vimal - owner; users - group
+
+passwd		//to change password
+password is stored in the file /etc/shadow as regular file
+
+Additional permissions:
+Additional permissions are given to programs via a mechanism:
+1 Set User ID ( SUID)  
+2 Set Group ID ( SGID)
+-r-sr-xr-x		//-s will indicate if additional permissions (bit) enabled
+
+--changing permissions
+chmod expression files
+
+expression type:
+octal (octal mode sets the permissions of files not to modify them)
+symbolic
+
+symbolic:
+(who)(action)(permissions)
+
+who:
+Letter Represents
+u 		Owner
+g 		Group
+o 		Other
+a 		All
+
+actions:
+Symbol Represents
++ 		Adding permissions to the file
+- 		Removing permission from the file
+= 		Explicitly set the file permissions
+
+permissions:
+Letter Represents
+r 		Read
+w 		Write
+x 		Execute
+s 		SUID or SGID
+
+eg:
+chmod go-rwx *
+
+chmod -R o+r pub		//-R recursive
+change the permissions for every file in a directory including the files in subdirectories.
+
+octal:
+permission	value
+Read		 4
+Write		 2
+Execute		 1
+
+eg:
+chmod 0444 *
+
+Changing Owners and Groups
+1 chown
+2 chgrp
+
+chown user: dir
+The super user, root, has the unrestricted capability to change the ownership of a file
+--------------------------------------------------------HOUR - 6-------------------------------------------------------------------
+processes:
+ps
+Foreground Processes
+Background Processes:
+
+--to start a background process is to add an ampersand ( &) at the end of the command.
+ls -ltr &
+
+Moving a Foreground Process to the Background:
+--The suspend key on most UNIX systems is Ctrl+Z.
+
+stty -a
+stty functionName shortcutkey		//we can determine which key performs which function
+set -o|+o shellName(vi/monitor)		//to enable monitoring
+
+bg %2								//command moves the most recently suspended process to the background (%jobno - optional)
+
+Moving a Background Process to the Foreground:
+fg
+
+Keeping Background Processes Around:
+nohup 				//can prevent a background process from terminating, when you sign off or are disconnected.
+--it redirects output to a file known as nohup.out
+nohup ls &
+nohup ls > result &		//manual redirect
+
+Waiting for Background Processes to Finish:
+wait
+wait %1					//can not enter another command until job number 1 finishes
+
+jobs		//it will show running and suspended jobs also
+
+
+
+
+
+
+
+
+
+p.no:111
+p.no:435
+p.no: 59
+
+
+

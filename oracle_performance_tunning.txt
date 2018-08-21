@@ -1,0 +1,77 @@
+db control url
+https://localhost:1158/em
+
+cmd>
+sqlplus system(username)
+
+system
+manager
+
+orcl
+orcl
+
+sqlplus>
+create user ptuning identified by ptuning;
+grant create session to ptuning;
+grant dba to ptuning;
+
+create table deck_of_cards (color varchar2(30), suit varchar2(30), pip varchar2(2));
+select count(*) from deck_of_cards;
+
+--------------
+generate explain plan
+
+set autotrace on
+set autotrace on explain statistics;
+
+select count(*) from employees e join departments d
+on e.department_id = d.department_id
+
+describe plan_table;
+
+explain plan for select count(*) from employees e join departments d
+on e.department_id = d.department_id
+--it will store the explain plan in the plan_table
+
+select count(*) from plan_table:
+
+select plan_table_output from table(dbms_xplan.display());		//this will show the meaningful explain plan. dbms_xplan is a package and display is function
+
+-------------------------
+
+set autotrace traceonly
+
+select d.department_name, j.job_title, count(1) 
+from employees e 
+JOIN departments d
+on e.department_id = d.department_id
+join jobs j
+on e.job_id=j.job_id
+where e.salary >= 5000
+group by d.department_name, j.job_title
+order by d.department_name, j.job_title;
+
+set lines 200
+
+---------------------------------
+
+AWR - automatic workload repository
+
+----------------------------------
+
+select * from dba_users;
+select * from dba_tables;
+select * from dba_tablespaces;
+select * from DBA_SEGMENTS;
+select * from DBA_EXTENTS;
+select * from DBA_DATA_FILES;
+
+
+
+
+
+
+
+
+
+

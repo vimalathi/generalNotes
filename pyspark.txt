@@ -1,0 +1,41 @@
+sc in pyspark is a web service running on host machine
+
+pyspark is driver program with spark context
+
+pyspark --master yarn/mesos		//yarn or mesos is a cluster manager
+
+sc will create two executers(executer is a service relying on worker node(node manage is a software if yarn used) which is having 2 default task and catch) 
+even before executing any jobs 
+these executers are managed by the cluster manager(or application master in yarn)
+
+pyspark supports collections(dict, set, list) in distributed fashion
+
+spark is not having any file system 
+it uses HDFS api
+HDFS api will support HDFS, local(while running in local mode only), s3 and azure blob
+so spark is able to interact will all of these file systems using HDFS api
+And HDFS api will support different file formats(txt, doc, iso, pdf, etc) also	//we have to integrate specific plug-ins for some file formats.
+
+when running on clusters, to read local file system we have to read from python api then we have to convert into spark based RDDs
+differance between dataset and RDD are:
+	dataset is a linear threaded collection
+	RDD is a multi-threaded distributed collection
+
+RDD - Resilient Distributed Dataset
+DAG - Directed Acyclic Graph		//this job visualization will be shown in sparkrk history UI
+
+spark uses lazy evaluation:
+that means invoking more and more transformation API, until invoke any execution triggering API(action API) it will keep generating GAG by compiling code
+after invoking any execution triggering API(action API) then the DAG associated with RDD will executed
+--to get DAG for a RDD in shell
+>RDDName.toDebugString()
+
+paired rdd - will contains tuples with 2 elements
+
+
+
+
+
+
+
+

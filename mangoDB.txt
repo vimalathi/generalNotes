@@ -1,0 +1,78 @@
+mongodb atlas cluster
+cluster0-shard-00-00-kyinn.mongodb.net
+
+--install mongodb in windows create data and log folder inside installed dir to configure
+--open windows cmd prompt and goto mongodb bin dir
+c:\mongodb\bin>
+mongod --directoryperdb --dbpath c:\mongodb\data\db --logpath c:\mongodb\log\mongo.log --logappend --rest --install
+
+--then start the mongodb service
+bin>
+net start MongoDB
+--or
+mongo.exe
+
+>
+show dbs
+
+use mycustomers //it will create database for you
+
+db
+
+--to create user in mongodb
+db.createUser({ user:"mongodb", pwd:"mongodb", roles:["readWrite", "dbAdmin"] });
+
+--to create collections
+db.createCollection('customers');
+
+show collections;
+
+--to insert
+db.customers.insert({first_name:"vimal", last_name:"athi"});
+
+--multiple insert
+db.customers.insert([{first_name:"jeba", last_name:"astin"},{first_name:"mala", last_name:"thi", gender:"female", age:21} ]);
+
+--to retrieve records
+db.customers.find();
+db.customers.find().pretty();
+
+--to update
+db.customers.update({first_name:"vimal"},{first_name:"vimal", last_name:"athi", gender:"male"});
+//while updating if we not mentioning all columns it will replace with entire record with mentioned columns 
+
+--to update specific columns
+db.customers.update({first_name:"jeba"},{$set:{gender:"male"}});
+//it will keep the the existing column and will insert new data
+
+--to increment int value
+db.customers.update({first_name:"mala"},{$inc:{age:5}});
+
+--to remove a field
+db.customers.update({first_name:"mala"},{$unset:{age:1}});
+
+--to insert if not exist record
+db.customers.update({first_name:"mary"},{first_name:"mary", last_name:"selvam"},{upsert: true});
+
+--to update field name
+db.customers.update({first_name:"mala"},{$rename:{"gender":"sex"}});
+
+--to remove record
+db.customers.remove({first_name:"vimal"});
+db.customers.remove({first_name:"vimal"},{justOne: true}); //it will delete the first returning record only
+
+--to sort
+db.customers.find().sort({first_name:1}); //1 --> asce -1 --> desc
+
+--to count
+db.customers.find().count();
+
+--to limit
+db.customers.find().limit(2);
+
+--to iterate
+db.customers.find().forEach(function(doc){print("Customer Name: "+doc.first_name)});
+
+
+
+

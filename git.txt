@@ -1,0 +1,58 @@
+--.git file will have the git repos details
+
+git init
+
+git add filename.extensioin
+
+git status
+
+initial commit
+
+git commit
+
+git commit -m 	
+
+git log
+
+git add .
+
+git add *.extensioin
+
+touch .gitignore		//inside this file we can write the files which needs to be skip eg. *.log - it will skip all log files
+
+git commit -m 'adding ignore file'
+
+git branch brachName
+
+git checkout brachName
+
+--to merge we should be inside master branch
+git checkout master
+
+git merge brachName
+
+git mergetool		//tools merge and wins merge - popular
+
+git remote
+
+git clone http://url provided from git repos
+
+git remote
+cd repoName
+
+git remote -v		//will show all files url
+
+git fetch orgin
+
+git pull orgin
+
+git push orgin master
+
+git remote add repoName http://github.com/repo.git
+
+
+
+
+
+
+
