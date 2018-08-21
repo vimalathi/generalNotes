@@ -1,0 +1,37 @@
+RC file formats(column oriented) are created for hive tables
+ORC file format(modified ver of RC) only supported inside hive.
+
+hive can be used in push strategy
+hive is a type of schema on read (no integrity checks on write)
+while using load cmd to load data into hive, hive not executing mapreduce job, it just copies the file into hdfs
+in hive there are plenty of execution frameworks (engines) like mapreduce, tez, spark
+no update/delete in hive
+
+show functions; 
+show functions like ".*date.*"; //eg
+describe extended function_name;
+
+to write custom functions  in hive we have to write it using java and hive api
+--steps to create simple udf
+	create java class
+	build jar and copy it to cluster
+	register the jar in hive 
+		-add jar lca_hive.jar
+	create temp function
+		-create temporary function lca_to_date as 'lca.lca_to_date';
+
+
+hive executes multiple mr jobs 	for executing some queries
+
+mapside join  (distributed catch) is effective compared to reduce side join when joining with 
+small fact table (default table size property set to 25 mb) with dimension table
+
+hive -e "set;"|grep join
+
+sort by uses multiple reducers but in rdbms we cannot use parallel hint
+sort by will sort within the group
+
+for order by hive uses only one reducer which will give total ordering
+order by will sort entirely
+
+Pig and MapReduce cannot write to a table that has auto rebuild on, because Pig and MapReduce do not know how to rebuild the index.

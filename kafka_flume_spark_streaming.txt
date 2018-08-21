@@ -1,0 +1,737 @@
+
+--02 Streaming Analytics - Flume - Documentation and simple example
+
+mkdir flume_demo
+cd flume_demo
+vi example.conf
+--depends upon source and sink type the config parameters will change
+--two types of channels are	
+	memory
+	file
+
+*****
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+*****
+
+flume-ng agent --name a1 --conf-file /home/cloudera/flume_demo/example.conf	//agent name a1 is configured in conf file
+
+--another terminal
+telnet localhost 44444		//these are respective to config file
+
+########################################################
+
+--03 Streaming Analytics - Flume - Get data from web server logs to HDFS - Introduction
+--04 Streaming Analytics - Flume - Setting up data
+
+--get data from web server logs--
+
+--cloudera provides tool called genlogs 
+--genlog will simulate the e commerce platform to generate logs
+cd /opt/gen_logs/	//access.log files will have log data
+
+tail -F /opt/gen_logs/logs/access.log
+
+--05 Streaming Analytics - Flume - Web Server logs to HDFS - Defining Source
+
+source - exec (webserver)
+channel - memory
+sink - logger
+
+mkdir wslogstohdfs
+cp example.conf wslogstohdfs/
+cd wslogstohdfs/
+mv example.conf wshdfs.conf
+vi wshdfs.conf
+:%s/a1/wh		//this will replace the agent name a1 into wh-agent name
+:%s/r1/ws		//ws-webserver as source
+:%s/c1/mem		//mem - memory as channel
+
+---wshdfs.conf---
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+wh.sources = ws
+wh.sinks = k1
+wh.channels = mem
+
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wh.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+wh.channels.mem.type = memory
+wh.channels.mem.capacity = 1000
+wh.channels.mem.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+wh.sources.ws.channels = mem
+wh.sinks.k1.channel = mem
+------
+
+flume-ng agent -n wh -f /home/cloudera/flume_demo/wslogstohdfs/wshdfs.conf
+
+--to start the log simulator
+cd /opt/gen_logs/
+./start.logs.sh
+
+######################
+
+--06 Streaming Analytics - Flume - Web Server logs to HDFS - Sink - Introduction
+
+--get data from web server logs to hdfs
+source - exec (webserver)
+channel - memory
+sink - HDFS
+
+vi /home/cloudera/flume_demo/wslogstohdfs/wshdfs.conf
+:%s/k1/hd		//sink k1 as hd
+
+---wshdfs.conf---
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+wh.sources = ws
+wh.sinks = hd
+wh.channels = mem
+
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume_demo/data
+
+# Use a channel which buffers events in memory
+wh.channels.mem.type = memory
+wh.channels.mem.capacity = 1000
+wh.channels.mem.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+wh.sources.ws.channels = mem
+wh.sinks.hd.channel = mem
+
+-------
+
+flume-ng agent -n wh -f /home/cloudera/flume_demo/wslogstohdfs/wshdfs.conf
+--now the logs will be written into hdfs instead of logger
+
+hadoop fs -ls flume_demo/data
+hadoop fs -cat flume_demo/data/FlumeData.1520069106503
+
+##############################
+
+--07 Streaming Analytics - Flume - Web Server logs to HDFS - Customize Sink
+
+--for more config parameters refer flume user guide
+
+vi wshdfs.conf
+---wshdfs.conf---
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+wh.sources = ws
+wh.sinks = hd
+wh.channels = mem
+
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume_demo/data
+
+wh.sinks.hd.hdfs.filePrefix = FlumeDemo
+wh.sinks.hd.hdfs.fileSuffix = .txt
+wh.sinks.hd.hdfs.rollInterval = 120
+wh.sinks.hd.hdfs.rollSize = 1048567
+wh.sinks.hd.hdfs.rollCount = 100
+wh.sinks.hd.hdfs.fileType = DataStream
+
+# Use a channel which buffers events in memory
+wh.channels.mem.type = memory
+wh.channels.mem.capacity = 1000
+wh.channels.mem.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+wh.sources.ws.channels = mem
+wh.sinks.hd.channel = mem
+
+----------
+
+flume-ng agent -n wh -f /home/cloudera/flume_demo/wslogstohdfs/wshdfs.conf
+
+hadoop fs -ls flume_demo/data
+hadoop fs -cat flume_demo/data/FlumeDemo.1520069106503.txt
+hadoop fs -cat flume_demo/data/FlumeDemo.1520069106503.txt | wc -l
+
+#######################################
+
+--08 Streaming Analytics - Flume - Web Server logs to HDFS - memory channel
+--09 Streaming Analytics - Flume - Different implementations of agents
+	
+	multi agent flow
+	consolidation
+	multiplexing the flow
+	
+#######################################
+
+--10 Streaming Analytics - Kafka - High level architecture
+
+--11 Streaming Analytics - Kafka - Using commands
+	
+--cloudera
+kafka-topic.sh --create \
+	--zookeeper localhost:2181 --replica 1 --partition 1 \
+	--topic kafkademo
+
+--lab
+kafka-topic.sh --create \
+	--zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+	--replica 1 \
+	--partition 1 \
+	--topic test kafkademo
+
+kafka-topic.sh --list \
+	--zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+	--topic kafkademo
+
+kafka-console-producer.sh \
+	--broker-list nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+	--topic kafkademo
+--it will hang here we can publish messages to topic kafkademo
+
+--use another terminal
+kafka-console-consumer.sh \
+	--zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+	--topic kafkademo \
+	--from beginning
+
+--kafka will generate logs and index file internally 
+
+######################################################
+
+--12 Streaming Analytics - Kafka - Anatomy of topic
+
+topic is a file which captures stream of messages
+publishers publish message to topic
+consumers subscribe to topic
+topics can be partitioned for scalability
+topics can be replicated for availability
+offset - position of the last message consumer have read from each partition of topic
+consumer group can be created to facilitate multiple consumers read from same topic 
+	in co-ordinated fashion (offset is tracked at group level)
+	
+######################################################
+
+--13 Streaming Analytics - Role of Kafka and flume
+
+life cycle of streaming analysis
+	get data from source (flume or/and kafka)
+	process data
+	store it in target
+	
+kafka can be used for most of the applications
+but existing applications need to be refactored to publish messages.
+source applications are mission critical and highly sensible for any changes
+
+in this case, if messages already captured in web server logs, we can use flume 
+to get messages from logs and publish to kafka topic
+
+######################################################
+
+--14 Spark Streaming - Getting Started
+
+in a given application either we can use spark context or streaming context
+because the behavior of both are entirely different
+
+--streaming context vs spark context
+spark context is used to read and process data in low frequent interval (eg.30min)
+streaming context is used to read and process data in high frequent interval (eg.less that 10-30 sec)
+
+spark-shell		//it will launch with spark context so below streaming context will not run
+>import org.apache.spark.streaming._		//will create streaming context
+>import org.apache.spark.SparkConf
+
+>val conf = new SparkConf().setAppName("streaming").setMaster("yarn-client")
+>val ssc = new streamingContext(conf, Seconds(10))
+
+--to stop spark context
+>sc.stop 	//inside spark shell
+
+>import org.apache.spark.streaming._		
+>import org.apache.spark.SparkConf
+
+>val conf = new SparkConf().setAppName("streaming").setMaster("yarn-client")
+>val ssc = new streamingContext(conf, Seconds(10))
+
+#########################################################
+
+--15 Spark Streaming - Setting up netcat
+
+streaming context need to have web service
+here we can use netcat NC to simulate simple web service
+
+--to start NC
+nc -lk 9999
+
+###########################################################
+
+--16 Spark Streaming - Develop Streaming word count program
+
+develop the project
+compile into jar
+start netcat service
+run application using jar
+
+cygwin>
+sbt console		//sbt terminal to test scala code
+
+##########################################################
+
+
+--17 Spark Streaming - Deploy and run word count program
+
+--install sbt using yum or apt-get
+
+cygwon>
+mkdir scalademo/retail/src/main/scala
+cd scalademo/retail
+vi scalademo/retail/src/main/scala/StreamingWordCount.scala
+
+-----------
+import org.apache.spark.streaming._		
+import org.apache.spark.SparkConf
+
+object StreamingWordCount {
+    def main(args: Array[String]){
+      val executionMode = args(0)
+      val conf = new SparkConf().setAppName("streaming word count").setMaster("executionMode")
+      val ssc = new StreamingContext(conf, Seconds(10))
+
+      val lines = ssc.socketTextStream(args(1), args(2).toInt)
+      val words = lines.flatMap(line => line.split(" "))
+      val tuples = words.map(word => (word, 1))
+      val wordCount = tuples.reduceByKey((t, v) => t + v)
+      wordCount.print()
+
+      ssc.start()
+      ssc.awaitTermination()
+    }
+}
+---------
+
+vi build.sbt
+--------
+name := "streaming word count"
+version := "1.0"
+scalaVersion := "2.10.5"	//2.11.8
+
+libraryDependencies += "org.apache.spark" % "spark-core_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming_2.10" % "1.6.3"
+--------
+
+--to build jar file
+sbt package		//you have to be in parent dir
+
+--copy the jar file into development env 
+scp target/scala-2.10/retail_2.10-1.0.jar cloudera@qickstart.cloudera:/home/cloudera
+
+--start netcat in cygwin
+nc -lk quickstart.cloudera 9999
+
+--start telnet in cloudera vm
+telnet quickstart.cloudera 9999
+--close telnet
+
+spark-submit \
+	--class StreamWordCount \
+	--master yarn \
+	--conf spark.ui.port=12567 \
+	retail_2.10-1.0.jar yarn-client quickstart.cloudera 9999
+	
+--after starting take tracking url and check
+
+#############################################
+
+--18 Spark Streaming - Data Structure (DStream) and APIs
+Dstream is a series of RDD
+
+--19 Spark Streaming - Department Wise Count - Problem Statement
+--using gen logs (web server simulator)
+
+ls /opt/gen_logs/
+tail_logs.sh
+--understand the logs
+
+############################################
+
+--20 Spark Streaming - Department Wise Count - Develop and build application
+
+--this will teke data's from netcat logs
+>cygwin
+vi scalademo/retail/src/main/scala/streamingDepartmentCount.scala
+-------
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{StreamingContext,Seconds}
+
+object StreamingDepartmentCount {
+	def main(args: Array[String]) {
+		val conf = new SparkConf().setAppName("Streaming Word Count").setMaster(args(0))
+		val ssc = new StreamingContext(conf, Seconds(30))
+		
+		val messages = ssc.socketTextStream(args(1), args(2).toInt)		//arg(2) is port no so we are converting to int
+		val departmentMessages = messages.filter(msg => {
+			val endPoint = msg.split(" ")(6)
+			endPoint.split("/")(1) == "department"
+			})
+		val departments = departmentMessages.map(rec => {
+			val endPoint = rec.split(" ")(6)(endPoint.split("/")(2), 1)
+			})
+		val departmentTraffic = departments.reduceByKey((total, value) => total + value)		//Instead writhing this ((taotal, value) => total + value)
+																								//we can write (_+_) in scala
+		departmentTraffic.saveAsTextFiles("/user/cloudera/cnt")
+		
+		ssc.start()
+		ssc.awaitTermination()
+	}
+}
+-------
+>sbt package
+
+
+##############################################################
+
+--21 Spark Streaming - Department Wise Count - Run application on cluster
+
+ship the jar file to env
+tail_logs.sh
+start_logs.sh	//if logs not generated
+
+tail_logs.sh|nc -lk gw02.itversity.com 9999
+
+--another terminal
+telnet gw02.itversity.com 9999
+
+spark-submit \
+	--class streamingDepartmentCount \
+	--master yarn \
+	--conf spark.ui.port=12567 \
+	retail_2.10-1.0.jar yarn-client quickstart.cloudera 9999	//ip:port
+	
+--now we can validate the processed streamed output in hdfs dir
+hadoop fs -ls /user/clouudera/xxx.part*
+
+#################################################################
+
+--22 Flume and Spark Streaming - Department Wise Count - Setup Flume Agent
+
+--multiplexing agent
+so source will be one and destination will be more than one
+
+--itversity lab
+mkdir flume_demo/streamdeptcount
+vi flume_demo/streamdeptcount/sdc.conf
+
+---------
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+sdc.sources = ws
+sdc.sinks = hd spark
+sdc.channels = hdmem sparkmem
+
+# Describe/configure the source
+sdc.sources.ws.type = exec
+sdc.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+sdc.sinks.hd.type = hdfs
+sdc.sinks.hd.hdfs.path = hdfs://nn01.itversity.com:8020/user/murugesan/output/flumesparkintegration/rawlogs
+sdc.sinks.hd.hdfs.filePrefix = FlumeDemo
+sdc.sinks.hd.hdfs.fileSuffix = .txt
+sdc.sinks.hd.hdfs.rollInterval = 120
+sdc.sinks.hd.hdfs.rollSize = 1048567
+sdc.sinks.hd.hdfs.rollCount = 100
+sdc.sinks.hd.hdfs.fileType = DataStream
+
+sdc.sinks.spark.type = org.apache.spark.streaming.flume.sink.SparkSink
+sdc.sinks.spark.hostname = gw02.itversity.com
+sdc.sinks.spark.port = 8123
+
+# Use a channel sdcich buffers events in memory
+sdc.channels.hdmem.type = memory
+sdc.channels.hdmem.capacity = 1000
+sdc.channels.hdmem.transactionCapacity = 100
+
+sdc.channels.sparkmem.type = memory
+sdc.channels.sparkmem.capacity = 1000
+sdc.channels.sparkmem.transactionCapacity = 100
+
+
+# Bind the source and sink to the channel
+sdc.sources.ws.channels = hdmem sparkmem
+sdc.sinks.hd.channel = hdmem
+sdc.sinks.spark.channel = sparkmem
+-------
+
+--to find appropriate jar file google it for saprk 1.6.3 and flume integration
+cd /usr/hdp/current/flume/lib/		//cloudera - /usr/lib/flume-ng/lib
+ls -ltr
+spark-streaming-flume-sink_2.10-1.6.2.jar
+commons-lang3-3.5.jar
+scala-library-2.10.6.jar
+
+--to run this we should be in parent dir
+cd /home/murugesan/flume_demo/strdeptcount
+flume-ng agent -n sdc -f sdc.conf
+
+##########################################################################
+
+--23 Flume and Spark Streaming - Department Wise Count - Define Dependencies
+
+>cygwin
+cd scalademo/retail
+vi build.sbt
+
+------
+name := "retail"
+version := "1.0"
+scalaVersion := "2.10.6"
+
+libraryDependencies += "org.apache.spark" % "spark-core_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming-flume_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming-flume-sink_2.10" % "1.6.3"
+libraryDependencies += "org.scala-lang" % "scala-library" % "2.10.6"
+libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.3.2"
+------
+sbt package
+
+--refer documentation for the dependencies and versions should match with the /usr/hdp/current/lib
+
+######################################################################
+
+--24 Flume and Spark Streaming - Department Wise Count - Develop and Build Application
+
+>cygwin
+cd flume_demo/strdeptcount/src/main/scala
+cp streamingDeptCount.scala FlumeStreamingDeptCount.scala
+vi FlumeStreamingDeptCount.scala
+
+----------
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{StreamingContext,Seconds}
+import org.apache.spark.streaming.flume._
+
+object FlumeStreamingDeptCount {
+        def main(args: Array[String]) {
+                val conf = new SparkConf().setAppName("Flume Streaming Word Count").setMaster(args(0))
+                val ssc = new StreamingContext(conf, Seconds(30))
+
+                val stream = FlumeUtils.createPollingStream(ssc, args(1), args(2).toInt)
+                val messages = stream.map(s => new String(s.event.getBody.array()))
+                val departmentMessages = messages.filter(msg => {
+                        val endPoint = msg.split(" ")(6)
+                        endPoint.split("/")(1) == "department"
+                        })
+                val departments = departmentMessages.map(rec => {
+                        val endPoint = rec.split(" ")(6)(endPoint.split("/")(2), 1)
+                        })
+                val departmentTraffic = departments.reduceByKey((total, value) => total + value)              
+                departmentTraffic.saveAsTextFiles("/user/cloudera/cnt")
+
+                ssc.start()
+                ssc.awaitTermination()
+        }
+}
+---------
+
+############################################################################
+
+--25 Flume and Spark Streaming - Department Wise Count - Run and Validate Application
+
+>cygwon
+scp target/scala-2.10/retail_2.10-1.0.jar murugesan@gw02.itversity.com:~
+
+ssh murugesan@gw02.itversity.com
+>home dir
+flume-ng agent -n sdc -f sdc.conf
+
+spark-submit \
+--class FlumeStreamingDeptCount \
+--master yarn \
+--conf spark.ui.port=12986 \
+--jars "/usr/hdp/2.5.0.0-1245/spark/lib/spark-streaming-flume-sink_2.10-1.6.2.jar,
+/usr/hdp/2.5.0.0-1245/spark/lib/spark-streaming-flume_2.10-1.6.2.jar,
+/usr/hdp/2.5.0.0-1245/flume/lib/commons-lang3-3.5.jar
+/usr/hdp/2.5.0.0-1245/flume/lib/flume-ng-sdk-1.5.2.2.5.0.0-1245.jar" \
+retail_2.10-1.0.jar yarn-client gw02.itversity.com 8123
+
+###############################################################
+
+--26 Flume and Kafka integration - Create config file
+
+cd flume_demo
+mkdir wslogstokafka
+vi wskafka.conf
+
+-----------
+# example.conf: A single-node Flume configuration
+# write web server logs into kafka
+
+# Name the components on this agent
+wk.sources = ws
+wk.sinks = kafka
+wk.channels = mem
+
+# Describe/configure the source
+wk.sources.ws.type = exec
+wk.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wk.sinks.kafka.type = org.apache.flume.sink.kafka.KafkaSink
+wk.sinks.kafka.brokerList = nn01.itversity.com:6667, nn02.itversity.com:6667, rm
+01.itversity.com:6667
+wk.sinks.kafka.topic = flumekafkademo
+
+# Use a channel wkich buffers events in memory
+wk.channels.mem.type = memory
+wk.channels.mem.capacity = 1000
+wk.channels.mem.transactionCapacity = 100
+------------
+
+#################################################################
+
+--27 Flume and Kafka integration - Run and validate
+
+flume-ng agent --name wk --conf-file wskafka.conf
+
+>another terminal in itversity
+
+kafka-console-consumer.sh \
+--zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 \
+--topic fulemkafkademo \
+--from-beginning
+
+--to check logs
+su root
+cd /hdp01/kafks-logs/flumekafkademo/
+
+##################################################################
+
+--28 Kafka and Spark Streaming - Department Wise Count - Add Dependencies
+
+--in cygwin dev env
+vi build.sbt
+------------
+name := "retail"
+version := "1.0"
+scalaVersion := "2.10.6"
+
+libraryDependencies += "org.apache.spark" % "spark-core_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming-flume_2.10" % "1.6.3"
+libraryDependencies += "org.apache.spark" % "spark-streaming-flume-sink_2.10" % "1.6.3"
+libraryDependencies += "org.scala-lang" % "scala-library" % "2.10.6"
+libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.3.2"
+libraryDependencies += "org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.3"
+-------------
+sbt build
+
+##########################################################################
+
+--29 Kafka and Spark Streaming - Department Wise Count - Develop and build application
+
+cd scala_demo/retail/src/main/scala
+cp streamingDeptCount.scala kafkaStreamingDeptCount.scala
+
+vi kafkaStreamingDeptCount.scala
+--------------
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{StreamingContext,Seconds}
+import org.apache.spark.streaming.kafka._
+import kafka.serializer.StringDecoder
+
+object KafkaStreamingDeptCount{
+        def main(args: Array[String]) {
+                val conf = new SparkConf().setAppName("Streaming Word Count").setMaster(args(0))
+                val ssc = new StreamingContext(conf, Seconds(30))
+
+                val kafkaParams = Map[String, String]("metadata.broker.list" -> "nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667")
+                val topicSet = Set("flumekafkademo")
+
+                val stream = KafkaUtils.CreateDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topicSet)
+
+                val messages = Stream.map(s => s._2)
+
+                val departmentMessages = messages.filter(msg => {
+                        val endPoint = msg.split(" ")(6)
+                        endPoint.split("/")(1) == "department"
+                        })
+                val departments = departmentMessages.map(rec => {
+                        val endPoint = rec.split(" ")(6)(endPoint.split("/")(2), 1)
+                        })
+                val departmentTraffic = departments.reduceByKey((total, value) => total + value)
+                departmentTraffic.saveAsTextFiles("/user/cloudera/cnt")
+
+                ssc.start()
+                ssc.awaitTermination()
+        }
+}
+---------------
+>parent dir
+sbt package
+
+#######################################################################
+
+--30 Kafka and Spark Streaming - Department Wise Count - Run and validate application
+
+--ship the file to lab from cygwin
+scp target/filename.jar murugesan@gw02.itversity.com:~
+
+>lab terminal		//before submit job we have to doownload appropriate jar files and pass them parameter jar
+
+flume-ng agent --name wk --conf-file wskafka.conf		//it will start the flume agent and publish the message to kafka
+
+spark-submit \
+--class KafkaStreamingDeptCount \
+--master yarn \
+--conf spark.ui.port=12986 \
+--jars "/usr/hdp/2.5.0.0-1245/kafka/libs/kafka_2.10-0.8.2.1.jar, \
+/usr/hdp/2.5.0.0-1245/kafka/libs/spark-streaming-kafka_2.10-1.6.2.jar, \
+/usr/hdp/2.5.0.0-1245/kafka/libs/metrics-core-2.2.0.jar" \
+retail_2.10-1.0.jar yarn-client
+
+
+//this will store logs into hdfs as well as kafka topics
+//validate by going respective path and files
+
+#######################################################################
+

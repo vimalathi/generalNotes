@@ -1,0 +1,38 @@
+
+
+-------------------------------------------------------
+hive>
+create table tableName(k int, v int)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties("hbase.columns.mapping"=":key, cfName:columnName");
+
+hbase>
+list	//the same table created in hive will be in hbase also
+
+hive>
+create table tableName(k int, v int)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties("hbase.columns.mapping"=":key, cfName:columnName")
+tblproperties("hbase.table.name"="hbase_tableName");					//it will create the same table in hbase with diff table name
+
+hbase>
+list
+
+--to put data into hbase
+put 'hbase_tableName', 100, 'cfName:columnName',123546
+
+--view datas in tables
+scan 'tableName'
+
+--to get specific data from hbase table
+get 'tableName', 100, 'cfName:columnName'		//here 100 is the key
+
+--we can access and query the integrated hbase tables within hive
+--if we want to integrate existing table in hbase with hive, the new hive table should be created as a external table
+hive>
+create external table tableName(k int, v int)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties("hbase.columns.mapping"=":key, cfName:columnName")
+tblproperties("hbase.table.name"="hbase_tableName");
+
+
