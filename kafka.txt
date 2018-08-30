@@ -1,6 +1,6 @@
 kafka home dir>
 
-bin/zookeeper-server-start.sh /home/murugesan/kafka_2.11-1.0.0/config/zookeeper.properties
+bin/zookeeper-server-start.sh /home/vimalathi/kafka_2.11-1.0.0/config/zookeeper.properties
 
 --to use kafka 
 export KAFKA_HOME=/usr/hdp/2.5.0.0-1245/kafka  
